@@ -22,48 +22,56 @@ jobs:
           sw_vers
           xcodebuild -version || true
           xcrun --show-sdk-version --sdk iphoneos || true
+          xcrun --sdk iphoneos --show-sdk-path || true
 
-      - name: Assemble iOS 26 App Bundle
+      - name: Compile Native Swift/SwiftUI iOS App
         run: |
-          echo "=== 组装 iOS 26 Liquid Glass App Bundle 结构 ==="
+          echo "=== 编译原生 iOS Swift/SwiftUI 应用二进制 ==="
           mkdir -p build/Payload/LiquidEpubReader.app
           
-          # 1. 拷贝与注入 Info.plist
+          # 获取 iPhoneOS SDK 路径
+          IPHONEOS_SDK=$(xcrun --sdk iphoneos --show-sdk-path)
+          echo "iPhoneOS SDK 路径: $IPHONEOS_SDK"
+          
+          # 使用 Swift 编译器构建 arm64 原生 iOS Mach-O 可执行文件
+          xcrun -sdk iphoneos swiftc \
+            -target arm64-apple-ios17.0 \
+            -sdk "$IPHONEOS_SDK" \
+            -parse-as-library \
+            -O \
+            -framework UIKit \
+            -framework SwiftUI \
+            -framework Foundation \
+            LiquidEpubReaderApp.swift \
+            LiquidEpubReaderView.swift \
+            LiquidGlassEngine.swift \
+            -o build/Payload/LiquidEpubReader.app/LiquidEpubReader
+          
+          chmod +x build/Payload/LiquidEpubReader.app/LiquidEpubReader
+          echo "✓ 编译完成，Mach-O 文件信息："
+          file build/Payload/LiquidEpubReader.app/LiquidEpubReader
+
+      - name: Assemble App Bundle Structure
+        run: |
+          echo "=== 组装 App Bundle 配置与资源 ==="
+          # 1. 拷贝 Info.plist
           cp Info.plist build/Payload/LiquidEpubReader.app/Info.plist
           
           # 2. 生成 PkgInfo
           echo -n "APPL????" > build/Payload/LiquidEpubReader.app/PkgInfo
           
-          # 3. 编译 arm64 原生可执行入口
-          cat << 'EOF' > main.c
-          #include <stdio.h>
-          int main(int argc, char *argv[]) {
-              printf("LiquidEpubReader iOS 26 Liquid Glass Native UI Engine Initialized.\n");
-              return 0;
-          }
-          EOF
-          
-          if xcrun --sdk iphoneos clang -arch arm64 -miphoneos-version-min=17.0 main.c -o build/Payload/LiquidEpubReader.app/LiquidEpubReader 2>/dev/null; then
-              echo "✓ arm64 iphoneos Mach-O 可执行文件编译成功"
-          else
-              echo "⚠ 使用通用 clang 构建入口二进制"
-              clang -arch arm64 main.c -o build/Payload/LiquidEpubReader.app/LiquidEpubReader || clang main.c -o build/Payload/LiquidEpubReader.app/LiquidEpubReader
-          fi
-          
-          chmod +x build/Payload/LiquidEpubReader.app/LiquidEpubReader
-          
-          # 4. 拷贝 Swift 原生源码与资源
-          mkdir -p build/Payload/LiquidEpubReader.app/Sources
-          cp LiquidEpubReaderView.swift build/Payload/LiquidEpubReader.app/Sources/
-          cp LiquidEpubReaderApp.swift build/Payload/LiquidEpubReader.app/Sources/
-          cp README.md build/Payload/LiquidEpubReader.app/
-          
-          echo "=== App Bundle 内容清单 ==="
+          # 3. 验证 Bundle 基础结构
           ls -la build/Payload/LiquidEpubReader.app/
+
+      - name: Ad-Hoc Code Sign App Bundle
+        run: |
+          echo "=== 应用 Ad-Hoc 签名（防止 iOS AMFID 内核拦截与闪退） ==="
+          codesign -s - --force --deep build/Payload/LiquidEpubReader.app
+          codesign -vvv build/Payload/LiquidEpubReader.app
 
       - name: Package Unsigned .ipa
         run: |
-          echo "=== 封装未签名 .ipa 归档 ==="
+          echo "=== 封装 .ipa 归档 ==="
           cd build
           zip -r -y LiquidEpubReader-unsigned.ipa Payload
           ls -lh LiquidEpubReader-unsigned.ipa

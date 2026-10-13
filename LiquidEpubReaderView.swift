@@ -110,7 +110,7 @@ public enum TypographyStyle: String, CaseIterable, Identifiable, Sendable {
 
 // MARK: - 主容器与视图入口
 
-@available(iOS 26.0, *)
+@available(iOS 17.0, *)
 public struct LiquidEpubReaderRootView: View {
     @State private var books: [EpubBook] = MockEpubDataProvider.sampleLibrary
     @State private var selectedBook: EpubBook? = nil
@@ -399,7 +399,7 @@ public struct LiquidEpubReaderRootView: View {
 
 // MARK: - EPUB 沉浸式阅读器界面
 
-@available(iOS 26.0, *)
+@available(iOS 17.0, *)
 public struct EpubReaderDetailView: View {
     @Binding var book: EpubBook
     @Environment(\.dismiss) private var dismiss
@@ -676,7 +676,7 @@ public struct EpubReaderDetailView: View {
 
 // MARK: - 目录与大纲原生浮层 (Table of Contents Sheet)
 
-@available(iOS 26.0, *)
+@available(iOS 17.0, *)
 public struct TableOfContentsSheet: View {
     @Binding var book: EpubBook
     let currentIndex: Int
@@ -745,7 +745,7 @@ public struct TableOfContentsSheet: View {
 
 // MARK: - 排版与流体材质设置浮层 (Appearance Settings Sheet)
 
-@available(iOS 26.0, *)
+@available(iOS 17.0, *)
 public struct AppearanceSettingsSheet: View {
     @Binding var activeTheme: ReaderTheme
     @Binding var typographyStyle: TypographyStyle
@@ -967,12 +967,12 @@ public enum MockEpubDataProvider {
 
 // MARK: - 预览组件
 
-#available(iOS 26.0, *)
+#available(iOS 17.0, *)
 #Preview("流体书架主界面") {
     LiquidEpubReaderRootView()
 }
 
-#available(iOS 26.0, *)
+#available(iOS 17.0, *)
 #Preview("沉浸式阅读器与控制岛") {
     EpubReaderDetailView(
         book: .constant(MockEpubDataProvider.sampleLibrary[0])
