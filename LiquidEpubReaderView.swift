@@ -967,12 +967,10 @@ public enum MockEpubDataProvider {
 
 // MARK: - 预览组件
 
-#available(iOS 17.0, *)
 #Preview("流体书架主界面") {
     LiquidEpubReaderRootView()
 }
 
-#available(iOS 17.0, *)
 #Preview("沉浸式阅读器与控制岛") {
     EpubReaderDetailView(
         book: .constant(MockEpubDataProvider.sampleLibrary[0])
