@@ -1,0 +1,20 @@
+# Xcode
+build/
+DerivedData/
+*.moved-aside
+*.xcuserstate
+*.xcworkspace
+!default.xcworkspace
+xcuserdata/
+*.xccheckout
+*.xcscmblueprint
+
+# Swift Package Manager
+.build/
+
+# Operating System
+.DS_Store
+Thumbs.db
+
+# Agent internal data
+.pi/
